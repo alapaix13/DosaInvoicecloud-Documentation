@@ -54,11 +54,15 @@ Información que identifica el tipo y características del comprobante:
         
     - `41`: Compras (E41)
         
+    - `43`: Comprobante de Gastos Menores (E43)
+        
     - `44`: Regímenes Especiales (E44)
         
     - `45`: Gubernamental (E45)
         
     - `46`: Exportaciones (E46)
+        
+    - `47`: Comprobante de Pagos al Exterior de Servicios (E47)
         
 - **encf** (String, Requerido): Número del comprobante fiscal electrónico (formato: E\[tipo\]\[secuencia\])
     
@@ -111,6 +115,14 @@ Información que identifica el tipo y características del comprobante:
 - **terminoPago** (String, Opcional): Descripción del término de pago
     
     - Ejemplo: "CONTADO", "30 DIAS", "60 DIAS"
+        
+- **fechavencimientosecuencia** (String, Condicional): Fecha de vencimiento de la secuencia (formato: DD-MM-YYYY)
+    
+    - **Requerido para todos los tipos de eCF excepto E32 y E34**
+        
+    - No se debe incluir para tipos E32 (Factura de Consumo) y E34 (Nota de Crédito)
+        
+    - Debe ser una fecha válida en el futuro
         
 - **tablaFormasPago** (Object, Requerido): Detalle de las formas de pago utilizadas
     
@@ -355,6 +367,8 @@ La Factura de Crédito Fiscal (E31) es el comprobante que respalda las transacci
     
 5. MontoTotal = MontoGravadoTotal + MontoExento + TotalITBIS + MontoImpuestoAdicional - MontoDescuento + MontoRecargo
     
+6. **El campo fechavencimientosecuencia es obligatorio para E31**
+    
 
 #### **Ejemplo Práctico E31**
 
@@ -371,6 +385,7 @@ La Factura de Crédito Fiscal (E31) es el comprobante que respalda las transacci
       "tipoPago": 2,
       "fechaLimitePago": "15-06-2025",
       "terminoPago": "30 DIAS",
+      "fechavencimientosecuencia": "31-12-2025",
       "tablaFormasPago": {
         "formaDePago": [
           {
@@ -494,6 +509,8 @@ La Factura de Consumo (E32) se utiliza para transacciones con consumidores final
 3. Los cálculos de ITBIS deben ser correctos aunque no sea deducible
     
 4. Puede incluir montos exentos sin restricciones especiales
+    
+5. **El campo fechavencimientosecuencia NO debe incluirse para E32**
     
 
 #### **Ejemplo Práctico E32**
@@ -729,6 +746,8 @@ La Nota de Débito (E33) se utiliza para aumentar el valor de una factura previa
     
 5. El tipo de moneda debe coincidir con el documento original
     
+6. **El campo fechavencimientosecuencia es obligatorio para E33**
+    
 
 #### **Ejemplo Práctico E33**
 
@@ -744,6 +763,7 @@ La Nota de Débito (E33) se utiliza para aumentar el valor de una factura previa
       "tipoPago": 2,
       "fechaLimitePago": "30-06-2025",
       "terminoPago": "30 DIAS",
+      "fechavencimientosecuencia": "31-12-2025",
       "tablaFormasPago": {
         "formaDePago": [
           {
@@ -874,6 +894,8 @@ La Nota de Crédito (E34) se utiliza para disminuir el valor de una factura prev
 5. La fecha de emisión debe ser posterior al documento original
     
 6. Si es anulación total, el monto debe coincidir con el documento original
+    
+7. **El campo fechavencimientosecuencia NO debe incluirse para E34**
     
 
 #### **Ejemplo Práctico E34 - Devolución Parcial**
@@ -1093,6 +1115,8 @@ El Comprobante de Compras (E41) se utiliza para respaldar las adquisiciones real
     
 5. Límites de monto según normativa DGII
     
+6. **El campo fechavencimientosecuencia es obligatorio para E41**
+    
 
 #### **Ejemplo Práctico E41**
 
@@ -1107,6 +1131,7 @@ El Comprobante de Compras (E41) se utiliza para respaldar las adquisiciones real
       "tipoIngresos": "01",
       "tipoPago": 1,
       "terminoPago": "CONTADO",
+      "fechavencimientosecuencia": "31-12-2025",
       "tablaFormasPago": {
         "formaDePago": [
           {
@@ -1187,6 +1212,158 @@ El Comprobante de Compras (E41) se utiliza para respaldar las adquisiciones real
 
 ---
 
+### E43: Comprobante de Gastos Menores
+
+#### **Propósito**
+
+El Comprobante de Gastos Menores (E43) se utiliza para documentar gastos de montos reducidos realizados a proveedores informales o en situaciones donde no es posible obtener un comprobante fiscal formal. Permite a las empresas justificar gastos operacionales menores como parte de sus costos deducibles.
+
+#### **Características Principales**
+
+- Para gastos de montos menores
+    
+- Emitido por el comprador (similar a E41)
+    
+- No requiere RNC del proveedor en muchos casos
+    
+- Límite de monto establecido por DGII
+    
+- Documentación simplificada
+    
+- Generalmente sin ITBIS deducible
+    
+
+#### **Campos Obligatorios Específicos**
+
+- `encabezado.idDoc.tipoeCF`: "43"
+    
+- `encabezado.idDoc.fechavencimientosecuencia`: Obligatorio
+    
+- `encabezado.emisor`: Representa a la empresa que realiza el gasto
+    
+- `encabezado.comprador`: Representa al proveedor/vendedor
+    
+    - `razonSocialComprador`: Nombre del proveedor
+        
+    - `RNCComprador`: Opcional si es persona informal
+        
+- `encabezado.totales.MontoTotal`: Debe estar dentro del límite permitido
+    
+
+#### **Reglas de Validación**
+
+1. El emisor del E43 es quien realiza el gasto
+    
+2. El monto total debe estar dentro de los límites establecidos por DGII
+    
+3. Debe documentar claramente el concepto del gasto
+    
+4. Generalmente todo el monto es exento de ITBIS
+    
+5. El "comprador" en el JSON representa al proveedor/vendedor
+    
+6. **El campo fechavencimientosecuencia es obligatorio para E43**
+    
+
+#### **Ejemplo Práctico E43**
+
+``` json
+{
+  "encabezado": {
+    "version": "1.0",
+    "idDoc": {
+      "tipoeCF": "43",
+      "encf": "E430000000001",
+      "indicadorMontoGravado": 0,
+      "tipoIngresos": "01",
+      "tipoPago": 1,
+      "terminoPago": "CONTADO",
+      "fechavencimientosecuencia": "31-12-2025",
+      "tablaFormasPago": {
+        "formaDePago": [
+          {
+            "formaPago": "1",
+            "montoPago": "2500.00"
+          }
+        ]
+      }
+    },
+    "emisor": {
+      "rncEmisor": "101742186",
+      "razonSocialEmisor": "Empresa Compradora SRL",
+      "nombreComercial": "Empresa Compradora",
+      "direccionEmisor": "Calle Principal No. 123, Santo Domingo",
+      "numeroFacturaInterna": "GM-2025-001",
+      "zonaVenta": "GASTOS-MENORES",
+      "fechaEmision": "15-05-2025"
+    },
+    "comprador": {
+      "RNCComprador": "",
+      "razonSocialComprador": "María Rodríguez - Vendedora Informal",
+      "direccionComprador": "Mercado Central, Puesto 45, Santo Domingo",
+      "codigoInternoComprador": "PROV-GM-001"
+    },
+    "totales": {
+      "MontoGravadoTotal": "0.00",
+      "MontoGravadoI1": "0.00",
+      "MontoGravadoI2": "0.00",
+      "MontoGravadoI3": "0.00",
+      "MontoExento": "2500.00",
+      "ITBIS1": 0,
+      "ITBIS2": 0,
+      "ITBIS3": 0,
+      "TotalITBIS": "0.00",
+      "TotalITBIS1": "0.00",
+      "TotalITBIS2": "0.00",
+      "TotalITBIS3": "0.00",
+      "MontoImpuestoAdicional": "0.00",
+      "MontoDescuento": null,
+      "MontoRecargo": null,
+      "MontoTotal": "2500.00"
+    }
+  },
+  "detallesItems": {
+    "items": [
+      {
+        "numeroLinea": 1,
+        "indicadorFacturacion": 1,
+        "nombreItem": "Compra de materiales de oficina - útiles varios",
+        "indicadorBienoServicio": 2,
+        "cantidadItem": "1.00",
+        "unidadMedida": 16,
+        "precioUnitarioItem": "2500.00",
+        "montoItem": "2500.00",
+        "tablaImpuestoAdicional": {}
+      }
+    ]
+  },
+  "Subtotales": {},
+  "descuentosORecargos": {
+    "descuentoORecargo": []
+  },
+  "paginacion": {},
+  "informacionReferencia": {}
+}
+
+ ```
+
+#### **Casos de Uso Comunes E43**
+
+- Compras en mercados locales
+    
+- Gastos de transporte menor (taxis, estacionamiento)
+    
+- Materiales de oficina a vendedores informales
+    
+- Servicios de mensajería local
+    
+- Alimentación en establecimientos sin facturación
+    
+- Pequeñas reparaciones y mantenimiento
+    
+
+---
+
 ### E44: Regímenes Especiales
 
 #### **Propósito**
@@ -1229,6 +1406,8 @@ El Comprobante de Regímenes Especiales (E44) se utiliza para transacciones con 
     
 5. Mantener documentación de respaldo del régimen
     
+6. **El campo fechavencimientosecuencia es obligatorio para E44**
+    
 
 #### **Ejemplo Práctico E44 - Zona Franca**
 
@@ -1244,6 +1423,7 @@ El Comprobante de Regímenes Especiales (E44) se utiliza para transacciones con 
       "tipoPago": 2,
       "fechaLimitePago": "15-06-2025",
       "terminoPago": "30 DIAS",
+      "fechavencimientosecuencia": "31-12-2025",
       "tablaFormasPago": {
         "formaDePago": [
           {
@@ -1371,6 +1551,8 @@ El Comprobante Gubernamental (E45) se utiliza para transacciones con entidades d
     
 5. Documentación adicional según tipo de entidad
     
+6. **El campo fechavencimientosecuencia es obligatorio para E45**
+    
 
 #### **Ejemplo Práctico E45**
 
@@ -1386,6 +1568,7 @@ El Comprobante Gubernamental (E45) se utiliza para transacciones con entidades d
       "tipoPago": 2,
       "fechaLimitePago": "30-06-2025",
       "terminoPago": "60 DIAS",
+      "fechavencimientosecuencia": "31-12-2025",
       "tablaFormasPago": {
         "formaDePago": [
           {
@@ -1515,6 +1698,8 @@ El Comprobante de Exportación (E46) documenta las ventas de bienes o servicios 
     
 5. Cumplir con requisitos aduaneros
     
+6. **El campo fechavencimientosecuencia es obligatorio para E46**
+    
 
 #### **Ejemplo Práctico E46**
 
@@ -1530,6 +1715,7 @@ El Comprobante de Exportación (E46) documenta las ventas de bienes o servicios 
       "tipoPago": 2,
       "fechaLimitePago": "30-06-2025",
       "terminoPago": "45 DIAS",
+      "fechavencimientosecuencia": "31-12-2025",
       "tablaFormasPago": {
         "formaDePago": [
           {
@@ -1634,6 +1820,188 @@ El Comprobante de Exportación (E46) documenta las ventas de bienes o servicios 
 
 ---
 
+### E47: Comprobante de Pagos al Exterior de Servicios
+
+#### **Propósito**
+
+El Comprobante de Pagos al Exterior de Servicios (E47) se utiliza para documentar pagos realizados a proveedores extranjeros por servicios recibidos. Este tipo de comprobante es importante para la deducibilidad fiscal y el cumplimiento de las obligaciones de retención en la fuente cuando apliquen.
+
+#### **Características Principales**
+
+- Para pagos de servicios a proveedores en el exterior
+    
+- El proveedor no tiene presencia fiscal en República Dominicana
+    
+- Generalmente exento de ITBIS (servicios prestados desde el exterior)
+    
+- Requiere identificación del proveedor extranjero
+    
+- Puede incluir retenciones en la fuente
+    
+- Transacción típicamente en moneda extranjera
+    
+
+#### **Campos Obligatorios Específicos**
+
+- `encabezado.idDoc.tipoeCF`: "47"
+    
+- `encabezado.idDoc.fechavencimientosecuencia`: Obligatorio
+    
+- `encabezado.emisor`: Empresa dominicana que realiza el pago
+    
+- `encabezado.comprador`: Proveedor extranjero del servicio
+    
+    - `identificadorextranjero`: Obligatorio (Tax ID, VAT, etc.)
+        
+    - `razonSocialComprador`: Nombre del proveedor extranjero
+        
+    - `direccionComprador`: Dirección en el país de origen
+        
+- `encabezado.OtraMoneda`: Generalmente requerido para moneda extranjera
+    
+
+#### **Reglas de Validación**
+
+1. El proveedor debe ser extranjero (usar identificadorextranjero, no RNC)
+    
+2. Los servicios deben ser prestados desde el exterior
+    
+3. Generalmente todo el monto es exento de ITBIS
+    
+4. Debe incluir información completa del proveedor extranjero
+    
+5. Si aplica retención en la fuente, documentarla apropiadamente
+    
+6. Incluir conversión de moneda cuando el pago sea en moneda extranjera
+    
+7. **El campo fechavencimientosecuencia es obligatorio para E47**
+    
+
+#### **Ejemplo Práctico E47**
+
+``` json
+{
+  "encabezado": {
+    "version": "1.0",
+    "idDoc": {
+      "tipoeCF": "47",
+      "encf": "E470000000001",
+      "indicadorMontoGravado": 0,
+      "tipoIngresos": "01",
+      "tipoPago": 2,
+      "fechaLimitePago": "15-06-2025",
+      "terminoPago": "30 DIAS",
+      "fechavencimientosecuencia": "31-12-2025",
+      "tablaFormasPago": {
+        "formaDePago": [
+          {
+            "formaPago": "3",
+            "montoPago": "1475000.00"
+          }
+        ]
+      }
+    },
+    "emisor": {
+      "rncEmisor": "101742186",
+      "razonSocialEmisor": "Empresa Tecnología Dominicana SRL",
+      "nombreComercial": "Empresa Tecnología",
+      "direccionEmisor": "Calle Tecnológica No. 789, Santo Domingo",
+      "numeroFacturaInterna": "PSE-2025-001",
+      "zonaVenta": "SERVICIOS-EXTERIOR",
+      "fechaEmision": "15-05-2025"
+    },
+    "comprador": {
+      "RNCComprador": "",
+      "identificadorextranjero": "EIN-98-7654321",
+      "razonSocialComprador": "Global Software Solutions Inc.",
+      "correoComprador": "billing@globalsoftware.com",
+      "direccionComprador": "500 Tech Park Drive, San Francisco, CA 94105, USA",
+      "codigoInternoComprador": "PROV-USA-001"
+    },
+    "totales": {
+      "MontoGravadoTotal": "0.00",
+      "MontoGravadoI1": "0.00",
+      "MontoGravadoI2": "0.00",
+      "MontoGravadoI3": "0.00",
+      "MontoExento": "1475000.00",
+      "ITBIS1": 0,
+      "ITBIS2": 0,
+      "ITBIS3": 0,
+      "TotalITBIS": "0.00",
+      "TotalITBIS1": "0.00",
+      "TotalITBIS2": "0.00",
+      "TotalITBIS3": "0.00",
+      "MontoImpuestoAdicional": "0.00",
+      "MontoDescuento": null,
+      "MontoRecargo": null,
+      "MontoTotal": "1475000.00"
+    },
+    "OtraMoneda": {
+      "TipoMoneda": "USD",
+      "TipoCambio": "59.00",
+      "MontoExentoOtraMoneda": "25000.00",
+      "MontoGravado1OtraMoneda": "0.00",
+      "MontoGravado2OtraMoneda": "0.00",
+      "MontoGravado3OtraMoneda": "0.00",
+      "MontoGravadoTotalOtraMoneda": "0.00",
+      "TotalITBISOtraMoneda": "0.00",
+      "TotalITBIS1OtraMoneda": "0.00",
+      "TotalITBIS2OtraMoneda": "0.00",
+      "TotalITBIS3OtraMoneda": "0.00",
+      "MontoImpuestoAdicionalOtraMoneda": "0.00",
+      "MontoDescuentoOtraMoneda": "0.00",
+      "MontoRecargoOtraMoneda": "0.00",
+      "MontoTotalOtraMoneda": "25000.00"
+    }
+  },
+  "detallesItems": {
+    "items": [
+      {
+        "numeroLinea": 1,
+        "indicadorFacturacion": 4,
+        "nombreItem": "Licencias de software empresarial - Suscripción anual",
+        "indicadorBienoServicio": 1,
+        "cantidadItem": "1.00",
+        "unidadMedida": 1,
+        "precioUnitarioItem": "1475000.00",
+        "montoItem": "1475000.00",
+        "tablaImpuestoAdicional": {},
+        "OtraMonedaDetalle": {
+          "PrecioOtraMoneda": "25000.00",
+          "MontoItemOtraMoneda": "25000.00"
+        }
+      }
+    ]
+  },
+  "Subtotales": {},
+  "descuentosORecargos": {
+    "descuentoORecargo": []
+  },
+  "paginacion": {},
+  "informacionReferencia": {}
+}
+
+ ```
+
+#### **Casos de Uso Comunes E47**
+
+- Licencias de software internacional
+    
+- Servicios de consultoría extranjera
+    
+- Servicios de hosting y cloud computing
+    
+- Publicidad en plataformas internacionales
+    
+- Servicios profesionales de firmas extranjeras
+    
+- Suscripciones a plataformas SaaS internacionales
+    
+- Servicios de capacitación y entrenamiento en línea
+    
+
+---
+
 ## Catálogos y Códigos
 
 ### Catálogo de Formas de Pago
@@ -1731,25 +2099,27 @@ El Comprobante de Exportación (E46) documenta las ventas de bienes o servicios 
 
 ### Comparación de Tipos de eCF
 
-| Característica | E31 | E32 | E33 | E34 | E41 | E44 | E45 | E46 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **RNC Comprador Obligatorio** | Sí | No | Según original | Según original | Opcional | Sí | Sí | No |
-| **Crédito Fiscal ITBIS** | Sí | No | Según original | Según original | No | Según régimen | Sí | No |
-| **Permite Exento** | Sí | Sí | Sí | Sí | Sí | Sí | Sí | Sí (todo) |
-| **Requiere Referencia** | No | No | Sí | Sí | No | No | No | No |
-| **Moneda Extranjera** | Opcional | Opcional | Opcional | Opcional | Opcional | Opcional | Opcional | Común |
-| **Emisor** | Vendedor | Vendedor | Vendedor | Vendedor | Comprador | Vendedor | Vendedor | Vendedor |
+| Característica | E31 | E32 | E33 | E34 | E41 | E43 | E44 | E45 | E46 | E47 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **RNC Comprador Obligatorio** | Sí | No | Según original | Según original | Opcional | Opcional | Sí | Sí | No | No |
+| **Crédito Fiscal ITBIS** | Sí | No | Según original | Según original | No | No | Según régimen | Sí | No | No |
+| **Permite Exento** | Sí | Sí | Sí | Sí | Sí | Sí | Sí | Sí | Sí (todo) | Sí (todo) |
+| **Requiere Referencia** | No | No | Sí | Sí | No | No | No | No | No | No |
+| **Moneda Extranjera** | Opcional | Opcional | Opcional | Opcional | Opcional | Opcional | Opcional | Opcional | Común | Común |
+| **Emisor** | Vendedor | Vendedor | Vendedor | Vendedor | Comprador | Comprador | Vendedor | Vendedor | Vendedor | Comprador |
+| **fechavencimientosecuencia** | Req | No | Req | No | Req | Req | Req | Req | Req | Req |
 
 ### Comparación de Campos por Tipo
 
-| Campo | E31 | E32 | E33 | E34 | E41 | E44 | E45 | E46 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| RNCComprador | ✓ Req | ○ Opc | ✓ Según | ✓ Según | ○ Opc | ✓ Req | ✓ Req | ✗ No |
-| identificadorextranjero | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ✗ No | ✓ Req |
-| MontoGravado | ✓ Req | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ✗ No |
-| MontoExento | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ✓ Común | ✓ Común | ○ Opc | ✓ Req |
-| informacionReferencia | ✗ No | ✗ No | ✓ Req | ✓ Req | ✗ No | ✗ No | ✗ No | ✗ No |
-| OtraMoneda | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ✓ Común |
+| Campo | E31 | E32 | E33 | E34 | E41 | E43 | E44 | E45 | E46 | E47 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| RNCComprador | ✓ Req | ○ Opc | ✓ Según | ✓ Según | ○ Opc | ○ Opc | ✓ Req | ✓ Req | ✗ No | ✗ No |
+| identificadorextranjero | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ✗ No | ✓ Req | ✓ Req |
+| MontoGravado | ✓ Req | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ✗ No | ○ Opc |
+| MontoExento | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ✓ Común | ✓ Común | ✓ Común | ○ Opc | ✓ Req | ✓ Común |
+| informacionReferencia | ✗ No | ✗ No | ✓ Req | ✓ Req | ✗ No | ✗ No | ✗ No | ✗ No | ✗ No | ✗ No |
+| OtraMoneda | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ✓ Común | ✓ Común |
+| fechavencimientosecuencia | ✓ Req | ✗ No | ✓ Req | ✗ No | ✓ Req | ✓ Req | ✓ Req | ✓ Req | ✓ Req | ✓ Req |
 
 **Leyenda:**
 
@@ -1783,6 +2153,10 @@ El Comprobante de Exportación (E46) documenta las ventas de bienes o servicios 
 - Validar formato de fechas (DD-MM-YYYY)
     
 - Confirmar que los montos en otra moneda coincidan con el tipo de cambio
+    
+- **Verificar que fechavencimientosecuencia esté presente para todos los tipos excepto E32 y E34**
+    
+- Validar que fechavencimientosecuencia no se incluya en E32 y E34
     
 
 **Ejemplo de Validación de Totales:**
