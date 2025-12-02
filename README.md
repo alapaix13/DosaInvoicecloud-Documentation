@@ -721,17 +721,17 @@ La Nota de Débito (E33) se utiliza para aumentar el valor de una factura previa
 
 #### **Campos Obligatorios Específicos**
 
-- `encabezado.idDoc.tipoeCF`: "33"
+- `Encabezado.IdDoc.TipoeCF`: "33"
     
-- `informacionReferencia`: Obligatorio - debe referenciar el eCF original
+- `Referencia`: Obligatorio - debe referenciar el eCF original
     
-    - `referenciaNCF`: Número del eCF original
+    - `NCFModificado`: Número del eCF original
         
-    - `fechaNCF`: Fecha del eCF original
+    - `FechaNCFModificado`: Fecha del eCF original
         
-    - `razonModificacion`: Motivo de la nota de débito
+    - `CodigoModificacion`: Código del tipo de modificación
         
-    - `tipoReferenciaNCF`: Tipo de documento referenciado (31 o 32)
+    - `RazonModificacion`: Motivo de la nota de débito
         
 
 #### **Reglas de Validación**
@@ -753,77 +753,73 @@ La Nota de Débito (E33) se utiliza para aumentar el valor de una factura previa
 
 ``` json
 {
-  "encabezado": {
-    "version": "1.0",
-    "idDoc": {
-      "tipoeCF": "33",
+  "Encabezado": {
+    "Version": "1.0",
+    "IdDoc": {
+      "TipoeCF": "33",
       "encf": "E330000000001",
-      "indicadorMontoGravado": 1,
-      "tipoIngresos": "01",
-      "tipoPago": 2,
-      "fechaLimitePago": "30-06-2025",
-      "terminoPago": "30 DIAS",
-      "fechavencimientosecuencia": "31-12-2025",
-      "tablaFormasPago": {
-        "formaDePago": [
-          {
-            "formaPago": "2",
-            "montoPago": "11800.00"
-          }
+      "IndicadorNotaCredito": 0,
+      "IndicadorMontoGravado": 0,
+      "TipoIngresos": "01",
+      "TipoPago": 1
+    },
+    "Emisor": {
+      "RNCEmisor": "133306001",
+      "RazonSocialEmisor": "Dosa Systems S.R.L",
+      "NombreComercial": "Dosa Systems S.R.L",
+      "DireccionEmisor": "Av. Bolivar #834, La Esperilla, 11010 Santo Domingo.",
+      "TablaTelefonoEmisor": {
+        "TelefonoEmisor": [
+          "829-491-0767"
         ]
-      }
+      },
+      "CorreoEmisor": "alejandrolapaixmatos@gmail.com",
+      "NumeroFacturaInterna": "(PROV200)",
+      "FechaEmision": "18-07-2025"
     },
-    "emisor": {
-      "rncEmisor": "101742186",
-      "razonSocialEmisor": "Empresa Ejemplo SRL",
-      "nombreComercial": "Empresa Ejemplo",
-      "direccionEmisor": "Calle Principal No. 123, Santo Domingo",
-      "numeroFacturaInterna": "ND-2025-001",
-      "zonaVenta": "PRINCIPAL",
-      "fechaEmision": "20-05-2025"
+    "Comprador": {
+      "RNCComprador": "131219772",
+      "RazonSocialComprador": "CCAG GROUP",
+      "FechaEntrega": "18-07-2025",
+      "CodigoInternoComprador": "CU2505-00004"
     },
-    "comprador": {
-      "RNCComprador": "130763102",
-      "razonSocialComprador": "Cliente Comercial SA",
-      "correoComprador": "facturacion@clientecomercial.com",
-      "direccionComprador": "Av. Winston Churchill No. 456, Santo Domingo",
-      "codigoInternoComprador": "CLI-001"
-    },
-    "totales": {
-      "MontoGravadoTotal": "10000.00",
-      "MontoGravadoI1": "10000.00",
-      "MontoGravadoI2": "0.00",
-      "MontoGravadoI3": "0.00",
-      "MontoExento": "0.00",
+    "Totales": {
+      "MontoGravadoTotal": 180,
+      "MontoGravadoI1": 180,
+      "MontoGravadoI2": 0,
+      "MontoGravadoI3": 0,
       "ITBIS1": 18,
-      "TotalITBIS": "1800.00",
-      "TotalITBIS1": "1800.00",
-      "TotalITBIS2": "0.00",
-      "TotalITBIS3": "0.00",
-      "MontoImpuestoAdicional": "0.00",
-      "MontoTotal": "11800.00"
+      "ITBIS2": 16,
+      "ITBIS3": 0,
+      "TotalITBIS": 32.4,
+      "TotalITBIS1": 32.4,
+      "TotalITBIS2": 0,
+      "TotalITBIS3": 0,
+      "MontoImpuestoAdicional": 0,
+      "MontoTotal": 212.4
     }
   },
-  "detallesItems": {
-    "items": [
+  "DetallesItems": {
+    "Items": [
       {
-        "numeroLinea": 1,
-        "indicadorFacturacion": 1,
-        "nombreItem": "Ajuste por diferencia de precio en Laptop Dell",
-        "indicadorBienoServicio": 2,
-        "cantidadItem": "1.00",
-        "unidadMedida": 1,
-        "precioUnitarioItem": "10000.00",
-        "montoItem": "10000.00"
+        "NumeroLinea": 1,
+        "IndicadorFacturacion": 1,
+        "NombreItem": "S.R.F",
+        "IndicadorBienoServicio": 2,
+        "CantidadItem": 1,
+        "UnidadMedida": 1,
+        "PrecioUnitarioItem": 180,
+        "MontoItem": 180
       }
     ]
   },
-  "informacionReferencia": {
-    "referenciaNCF": "E310000000001",
-    "fechaNCF": "15-05-2025",
-    "razonModificacion": "Ajuste por diferencia de precio acordada posteriormente",
-    "tipoReferenciaNCF": "31"
-  }
+  "Referencia": {
+    "NCFModificado": "E310000000003",
+    "FechaNCFModificado": "18-07-2025",
+    "CodigoModificacion": 1,
+    "RazonModificacion": "Ajuste por diferencia de precio"
+  },
+  "Totales": null
 }
 
  ```
@@ -868,17 +864,17 @@ La Nota de Crédito (E34) se utiliza para disminuir el valor de una factura prev
 
 #### **Campos Obligatorios Específicos**
 
-- `encabezado.idDoc.tipoeCF`: "34"
+- `Encabezado.IdDoc.TipoeCF`: "34"
     
-- `informacionReferencia`: Obligatorio - debe referenciar el eCF original
+- `Referencia`: Obligatorio - debe referenciar el eCF original
     
-    - `referenciaNCF`: Número del eCF original
+    - `NCFModificado`: Número del eCF original
         
-    - `fechaNCF`: Fecha del eCF original
+    - `FechaNCFModificado`: Fecha del eCF original
         
-    - `razonModificacion`: Motivo de la nota de crédito
+    - `CodigoModificacion`: Código del tipo de modificación
         
-    - `tipoReferenciaNCF`: Tipo de documento referenciado (31 o 32)
+    - `RazonModificacion`: Motivo de la nota de crédito
         
 
 #### **Reglas de Validación**
@@ -902,75 +898,73 @@ La Nota de Crédito (E34) se utiliza para disminuir el valor de una factura prev
 
 ``` json
 {
-  "encabezado": {
-    "version": "1.0",
-    "idDoc": {
-      "tipoeCF": "34",
+  "Encabezado": {
+    "Version": "1.0",
+    "IdDoc": {
+      "TipoeCF": "34",
       "encf": "E340000000001",
-      "indicadorMontoGravado": 1,
-      "tipoIngresos": "01",
-      "tipoPago": 2,
-      "terminoPago": "CREDITO APLICADO",
-      "tablaFormasPago": {
-        "formaDePago": [
-          {
-            "formaPago": "2",
-            "montoPago": "59000.00"
-          }
+      "IndicadorNotaCredito": 0,
+      "IndicadorMontoGravado": 0,
+      "TipoIngresos": "01",
+      "TipoPago": 1
+    },
+    "Emisor": {
+      "RNCEmisor": "133306001",
+      "RazonSocialEmisor": "Dosa Systems S.R.L",
+      "NombreComercial": "Dosa Systems S.R.L",
+      "DireccionEmisor": "Av. Bolivar #834, La Esperilla, 11010 Santo Domingo.",
+      "TablaTelefonoEmisor": {
+        "TelefonoEmisor": [
+          "829-491-0767"
         ]
-      }
+      },
+      "CorreoEmisor": "alejandrolapaixmatos@gmail.com",
+      "NumeroFacturaInterna": "(PROV200)",
+      "FechaEmision": "18-07-2025"
     },
-    "emisor": {
-      "rncEmisor": "101742186",
-      "razonSocialEmisor": "Empresa Ejemplo SRL",
-      "nombreComercial": "Empresa Ejemplo",
-      "direccionEmisor": "Calle Principal No. 123, Santo Domingo",
-      "numeroFacturaInterna": "NC-2025-001",
-      "zonaVenta": "PRINCIPAL",
-      "fechaEmision": "18-05-2025"
+    "Comprador": {
+      "RNCComprador": "131219772",
+      "RazonSocialComprador": "CCAG GROUP",
+      "FechaEntrega": "18-07-2025",
+      "CodigoInternoComprador": "CU2505-00004"
     },
-    "comprador": {
-      "RNCComprador": "130763102",
-      "razonSocialComprador": "Cliente Comercial SA",
-      "correoComprador": "facturacion@clientecomercial.com",
-      "direccionComprador": "Av. Winston Churchill No. 456, Santo Domingo",
-      "codigoInternoComprador": "CLI-001"
-    },
-    "totales": {
-      "MontoGravadoTotal": "50000.00",
-      "MontoGravadoI1": "50000.00",
-      "MontoGravadoI2": "0.00",
-      "MontoGravadoI3": "0.00",
-      "MontoExento": "0.00",
+    "Totales": {
+      "MontoGravadoTotal": 180,
+      "MontoGravadoI1": 180,
+      "MontoGravadoI2": 0,
+      "MontoGravadoI3": 0,
       "ITBIS1": 18,
-      "TotalITBIS": "9000.00",
-      "TotalITBIS1": "9000.00",
-      "TotalITBIS2": "0.00",
-      "TotalITBIS3": "0.00",
-      "MontoImpuestoAdicional": "0.00",
-      "MontoTotal": "59000.00"
+      "ITBIS2": 16,
+      "ITBIS3": 0,
+      "TotalITBIS": 32.4,
+      "TotalITBIS1": 32.4,
+      "TotalITBIS2": 0,
+      "TotalITBIS3": 0,
+      "MontoImpuestoAdicional": 0,
+      "MontoTotal": 212.4
     }
   },
-  "detallesItems": {
-    "items": [
+  "DetallesItems": {
+    "Items": [
       {
-        "numeroLinea": 1,
-        "indicadorFacturacion": 1,
-        "nombreItem": "Devolución de 1 Laptop Dell Inspiron 15 por defecto de fábrica",
-        "indicadorBienoServicio": 2,
-        "cantidadItem": "1.00",
-        "unidadMedida": 1,
-        "precioUnitarioItem": "50000.00",
-        "montoItem": "50000.00"
+        "NumeroLinea": 1,
+        "IndicadorFacturacion": 1,
+        "NombreItem": "S.R.F",
+        "IndicadorBienoServicio": 2,
+        "CantidadItem": 1,
+        "UnidadMedida": 1,
+        "PrecioUnitarioItem": 180,
+        "MontoItem": 180
       }
     ]
   },
-  "informacionReferencia": {
-    "referenciaNCF": "E310000000001",
-    "fechaNCF": "15-05-2025",
-    "razonModificacion": "Devolución de mercancía por defecto de fábrica",
-    "tipoReferenciaNCF": "31"
-  }
+  "Referencia": {
+    "NCFModificado": "E310000000003",
+    "FechaNCFModificado": "18-07-2025",
+    "CodigoModificacion": 1,
+    "RazonModificacion": "Corrección de factura"
+  },
+  "Totales": null
 }
 
  ```
@@ -979,73 +973,73 @@ La Nota de Crédito (E34) se utiliza para disminuir el valor de una factura prev
 
 ``` json
 {
-  "encabezado": {
-    "version": "1.0",
-    "idDoc": {
-      "tipoeCF": "34",
+  "Encabezado": {
+    "Version": "1.0",
+    "IdDoc": {
+      "TipoeCF": "34",
       "encf": "E340000000002",
-      "indicadorMontoGravado": 1,
-      "tipoIngresos": "01",
-      "tipoPago": 1,
-      "terminoPago": "ANULACION",
-      "tablaFormasPago": {
-        "formaDePago": [
-          {
-            "formaPago": "1",
-            "montoPago": "5900.00"
-          }
+      "IndicadorNotaCredito": 0,
+      "IndicadorMontoGravado": 0,
+      "TipoIngresos": "01",
+      "TipoPago": 1
+    },
+    "Emisor": {
+      "RNCEmisor": "133306001",
+      "RazonSocialEmisor": "Dosa Systems S.R.L",
+      "NombreComercial": "Dosa Systems S.R.L",
+      "DireccionEmisor": "Av. Bolivar #834, La Esperilla, 11010 Santo Domingo.",
+      "TablaTelefonoEmisor": {
+        "TelefonoEmisor": [
+          "829-491-0767"
         ]
-      }
+      },
+      "CorreoEmisor": "alejandrolapaixmatos@gmail.com",
+      "NumeroFacturaInterna": "(PROV200)",
+      "FechaEmision": "18-07-2025"
     },
-    "emisor": {
-      "rncEmisor": "101742186",
-      "razonSocialEmisor": "Tienda Retail SRL",
-      "nombreComercial": "Tienda Retail",
-      "direccionEmisor": "Plaza Comercial, Local 45, Santo Domingo",
-      "numeroFacturaInterna": "NC-2025-002",
-      "zonaVenta": "TIENDA-01",
-      "fechaEmision": "16-05-2025"
+    "Comprador": {
+      "RNCComprador": "131219772",
+      "RazonSocialComprador": "CCAG GROUP",
+      "FechaEntrega": "18-07-2025",
+      "CodigoInternoComprador": "CU2505-00004"
     },
-    "comprador": {
-      "RNCComprador": "",
-      "razonSocialComprador": "CONSUMIDOR FINAL",
-      "correoComprador": "cliente@email.com"
-    },
-    "totales": {
-      "MontoGravadoTotal": "5000.00",
-      "MontoGravadoI1": "5000.00",
-      "MontoGravadoI2": "0.00",
-      "MontoGravadoI3": "0.00",
-      "MontoExento": "0.00",
+    "Totales": {
+      "MontoGravadoTotal": 180,
+      "MontoGravadoI1": 180,
+      "MontoGravadoI2": 0,
+      "MontoGravadoI3": 0,
       "ITBIS1": 18,
-      "TotalITBIS": "900.00",
-      "TotalITBIS1": "900.00",
-      "TotalITBIS2": "0.00",
-      "TotalITBIS3": "0.00",
-      "MontoImpuestoAdicional": "0.00",
-      "MontoTotal": "5900.00"
+      "ITBIS2": 16,
+      "ITBIS3": 0,
+      "TotalITBIS": 32.4,
+      "TotalITBIS1": 32.4,
+      "TotalITBIS2": 0,
+      "TotalITBIS3": 0,
+      "MontoImpuestoAdicional": 0,
+      "MontoTotal": 212.4
     }
   },
-  "detallesItems": {
-    "items": [
+  "DetallesItems": {
+    "Items": [
       {
-        "numeroLinea": 1,
-        "indicadorFacturacion": 1,
-        "nombreItem": "Anulación total - Smartphone Samsung Galaxy A54",
-        "indicadorBienoServicio": 2,
-        "cantidadItem": "1.00",
-        "unidadMedida": 1,
-        "precioUnitarioItem": "5000.00",
-        "montoItem": "5000.00"
+        "NumeroLinea": 1,
+        "IndicadorFacturacion": 1,
+        "NombreItem": "S.R.F",
+        "IndicadorBienoServicio": 2,
+        "CantidadItem": 1,
+        "UnidadMedida": 1,
+        "PrecioUnitarioItem": 180,
+        "MontoItem": 180
       }
     ]
   },
-  "informacionReferencia": {
-    "referenciaNCF": "E320000000005",
-    "fechaNCF": "15-05-2025",
-    "razonModificacion": "Anulación total de factura por error en emisión",
-    "tipoReferenciaNCF": "32"
-  }
+  "Referencia": {
+    "NCFModificado": "E310000000003",
+    "FechaNCFModificado": "18-07-2025",
+    "CodigoModificacion": 1,
+    "RazonModificacion": "Corrección de factura"
+  },
+  "Totales": null
 }
 
  ```
