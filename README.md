@@ -1,5 +1,11 @@
 # Endpoint de Envío de Facturas Electrónicas (eCF)
 
+## Documentacion Adicional
+
+- [Endpoint para Crear Notas de Credito desde JSON de Factura](NOTAS_CREDITO_DESDE_FACTURA.md)
+
+---
+
 ## Descripción General
 
 Este endpoint permite el envío de Comprobantes Fiscales Electrónicos (eCF) al sistema de facturación electrónica de la República Dominicana. El servicio procesa diferentes tipos de documentos fiscales según las normativas de la DGII (Dirección General de Impuestos Internos).
