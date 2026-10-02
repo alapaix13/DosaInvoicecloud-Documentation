@@ -106,7 +106,7 @@ Información que identifica el tipo y características del comprobante:
         
     - `06`: Otros ingresos
         
-- **tipoPago** (Integer, Requerido): Forma de pago
+- **tipoPago** (Integer, Requerido): Tipo de pago (contado, crédito o gratuito). No confundir con `formaPago` (efectivo, transferencia, tarjeta…), que va en `tablaFormasPago`
     
     - `1`: Contado
         
@@ -134,7 +134,7 @@ Información que identifica el tipo y características del comprobante:
     
     - **formaDePago** (Array): Lista de formas de pago
         
-        - **formaPago** (String): Código de forma de pago (ver catálogo)
+        - **formaPago** (String): Código de forma de pago de la DGII (ver [Catálogo de Formas de Pago](#catálogo-de-formas-de-pago)): `1` efectivo, `2` cheque/transferencia/depósito, `3` tarjeta de débito o crédito, `4` venta a crédito
             
         - **montoPago** (Decimal): Monto pagado con esta forma
             
@@ -1719,7 +1719,7 @@ El Comprobante de Exportación (E46) documenta las ventas de bienes o servicios 
       "tablaFormasPago": {
         "formaDePago": [
           {
-            "formaPago": "5",
+            "formaPago": "3",
             "montoPago": "2950000.00"
           }
         ]
@@ -1895,7 +1895,7 @@ El Comprobante de Pagos al Exterior de Servicios (E47) se utiliza para documenta
       "tablaFormasPago": {
         "formaDePago": [
           {
-            "formaPago": "3",
+            "formaPago": "2",
             "montoPago": "1475000.00"
           }
         ]
@@ -2006,17 +2006,20 @@ El Comprobante de Pagos al Exterior de Servicios (E47) se utiliza para documenta
 
 ### Catálogo de Formas de Pago
 
+Son los códigos de la DGII para `formaPago` (tabla de formas de pago del e-CF):
+
 | Código | Descripción |
 | --- | --- |
 | 1 | Efectivo |
-| 2 | Cheque |
-| 3 | Transferencia |
-| 4 | Tarjeta de Crédito |
-| 5 | Tarjeta de Débito |
+| 2 | Cheque / Transferencia / Depósito |
+| 3 | Tarjeta de Débito / Crédito |
+| 4 | Venta a Crédito |
+| 5 | Bonos o Certificados de Regalo |
 | 6 | Permuta |
 | 7 | Nota de Crédito |
-| 8 | Bonos o Certificados de Regalo |
-| 9 | Otras Formas de Pago |
+| 8 | Otras Formas de Pago |
+
+> **Corrección (octubre 2026):** versiones anteriores de esta tabla tenían códigos que no son los de la DGII (3 = transferencia, 4 = tarjeta de crédito, 5 = tarjeta de débito, 9 = otras). Los correctos son los de arriba: **transferencia = `2`** y **tarjeta (débito o crédito) = `3`**. Si su integración usaba la tabla anterior, revise el mapeo.
 
 ### Catálogo de Unidades de Medida
 
@@ -2070,12 +2073,22 @@ El Comprobante de Pagos al Exterior de Servicios (E47) se utiliza para documenta
 
 ### Códigos de Estado
 
+Son los códigos de estado de la DGII:
+
 | Código | Estado | Descripción |
 | --- | --- | --- |
-| 0 | Rechazado | El eCF fue rechazado por errores críticos |
+| 0 | No encontrado | La DGII no tiene registro del eCF consultado |
 | 1 | Aceptado | El eCF fue aceptado sin observaciones |
-| 2 | Aceptado con Observaciones | El eCF fue aceptado pero tiene advertencias |
-| 4 | Aceptado Condicional | El eCF fue aceptado condicionalmente, requiere correcciones menores |
+| 2 | Rechazado | El eCF fue rechazado; el motivo viene en `mensajes` |
+| 3 | En proceso | La DGII todavía lo está validando |
+| 4 | Aceptado Condicional | El eCF fue aceptado con observaciones (vienen en `mensajes`) |
+
+#### Facturas de Consumo (E32) menores a RD$250,000
+
+Estas facturas se envían a la DGII como **Resumen de Factura de Consumo (RFCE)** y la respuesta trae el **estado real de la DGII**: `Aceptado`, `Aceptado Condicional` o `Rechazado`, con su `codigo`, `mensajes` y `secuenciaUtilizada`. No llevan `trackId`.
+
+- Ya no se devuelve el estado `Enviado Resumen`: si ve `Rechazado`, el motivo está en `mensajes`, igual que en el QR de la DGII.
+- Si el resumen no llega a la DGII (problema de conexión o de autenticación), la respuesta es **HTTP 502** con `estado: "Error de envío"` y el motivo en `mensaje`. En ese caso la DGII no recibió nada: reintente el envío con el mismo eNCF.
 
 ### Códigos de Error Comunes
 
