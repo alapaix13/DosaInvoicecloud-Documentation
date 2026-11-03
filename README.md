@@ -6,6 +6,25 @@
 
 ---
 
+## Correcciones para quien ya integró (noviembre 2026)
+
+Versiones anteriores de este documento tenían códigos que no son los de la DGII. Si su integración se hizo con ellas, revise estos puntos:
+
+| Dato | Decía antes | Lo correcto |
+| --- | --- | --- |
+| `indicadorFacturacion` | 1 producto, 2 servicio, 3 mixta, 4 profesional | 1 = ITBIS 18 %, 2 = ITBIS 16 %, 3 = ITBIS 0 %, 4 = exento. No dice si es producto o servicio. |
+| `indicadorBienoServicio` | 1 servicio, 2 bien | 1 = bien, 2 = servicio |
+| `unidadMedida` | 1 = unidad, y una tabla de 20 códigos | 43 = unidad, 1 = barril, y otra tabla. Ver [equivalencias](#catálogo-de-unidades-de-medida). Es opcional. |
+| `formaPago` | 3 transferencia, 4 tarjeta de crédito, 5 tarjeta de débito, 8 bonos, 9 otras | 2 transferencia, 3 tarjeta (débito o crédito), 4 venta a crédito, 5 bonos, 8 otras. Ver [equivalencias](#catálogo-de-formas-de-pago). |
+| Secuencia del e-NCF | 11 dígitos | 10 dígitos: 13 caracteres en total |
+| Comprobante rechazado | Un ejemplo de código lo trataba como `codigo` 0 | `codigo` 2. Lo más seguro es decidir por el texto de `estado`. |
+| Reintentos | «Nunca reutilizar una secuencia» y «reintente con el mismo eNCF» a la vez | Ver [qué hacer según la respuesta](#2-manejo-de-errores-y-reintentos) |
+| Ejemplos E32 (con compra), E41, E43, E44, E45 y E46 | El indicador de la línea no cuadraba con los totales | Corregidos. El E46 ahora va a tasa 0 % (`MontoGravadoI3`): su XSD no admite `MontoExento`. |
+
+Un comprobante ya aceptado por la DGII no se modifica. Si emitió con códigos equivocados, revise con su contador si hace falta corregirlos con una nota de crédito y cómo afecta sus reportes.
+
+---
+
 ## Descripción General
 
 Este endpoint permite el envío de Comprobantes Fiscales Electrónicos (eCF) al sistema de facturación electrónica de la República Dominicana. El servicio procesa diferentes tipos de documentos fiscales según las normativas de la DGII (Dirección General de Impuestos Internos).
@@ -70,7 +89,7 @@ Información que identifica el tipo y características del comprobante:
         
     - `47`: Comprobante de Pagos al Exterior de Servicios (E47)
         
-- **encf** (String, Requerido): Número del comprobante fiscal electrónico (formato: E\[tipo\]\[secuencia\])
+- **encf** (String, Requerido): Número del comprobante fiscal electrónico. 13 caracteres: `E` + 2 dígitos del tipo + 10 dígitos de secuencia (ejemplo: `E310000000001`)
     
     - Ejemplo: "E320000000004"
         
@@ -263,27 +282,27 @@ Lista de ítems del comprobante:
 
 - **numeroLinea** (Integer, Requerido): Número secuencial de la línea
     
-- **indicadorFacturacion** (Integer, Requerido): Tipo de facturación
+- **indicadorFacturacion** (Integer, Requerido): Cómo se grava la línea (ver [catálogo](#catálogo-de-indicadores-de-facturación))
     
-    - `1`: Facturación por producto
+    - `1`: ITBIS 18 %
         
-    - `2`: Facturación por servicio
+    - `2`: ITBIS 16 %
         
-    - `3`: Facturación mixta
+    - `3`: ITBIS 0 %
         
-    - `4`: Facturación por servicio profesional
+    - `4`: Exento
         
 - **nombreItem** (String, Requerido): Descripción del producto o servicio
     
 - **indicadorBienoServicio** (Integer, Requerido): Indica si es bien o servicio
     
-    - `1`: Servicio
+    - `1`: Bien
         
-    - `2`: Bien
+    - `2`: Servicio
         
 - **cantidadItem** (Decimal, Requerido): Cantidad del ítem
     
-- **unidadMedida** (Integer, Requerido): Código de unidad de medida (ver catálogo)
+- **unidadMedida** (Integer, Opcional): Código de unidad de medida de la DGII (ver [catálogo](#catálogo-de-unidades-de-medida)). Unidad = `43`
     
 - **precioUnitarioItem** (Decimal, Requerido): Precio unitario del ítem
     
@@ -442,9 +461,9 @@ La Factura de Crédito Fiscal (E31) es el comprobante que respalda las transacci
         "numeroLinea": 1,
         "indicadorFacturacion": 1,
         "nombreItem": "Laptop Dell Inspiron 15",
-        "indicadorBienoServicio": 2,
+        "indicadorBienoServicio": 1,
         "cantidadItem": "2.00",
-        "unidadMedida": 1,
+        "unidadMedida": 43,
         "precioUnitarioItem": "50000.00",
         "montoItem": "100000.00",
         "tablaImpuestoAdicional": {}
@@ -583,9 +602,9 @@ La Factura de Consumo (E32) se utiliza para transacciones con consumidores final
         "numeroLinea": 1,
         "indicadorFacturacion": 1,
         "nombreItem": "Smartphone Samsung Galaxy A54",
-        "indicadorBienoServicio": 2,
+        "indicadorBienoServicio": 1,
         "cantidadItem": "1.00",
-        "unidadMedida": 1,
+        "unidadMedida": 43,
         "precioUnitarioItem": "5000.00",
         "montoItem": "5000.00",
         "tablaImpuestoAdicional": {}
@@ -673,11 +692,11 @@ La Factura de Consumo (E32) se utiliza para transacciones con consumidores final
     "items": [
       {
         "numeroLinea": 1,
-        "indicadorFacturacion": 4,
+        "indicadorFacturacion": 1,
         "nombreItem": "SERVICIOS JURIDICOS: RESOLUCIÓN DE CONFLICTOS",
-        "indicadorBienoServicio": 1,
+        "indicadorBienoServicio": 2,
         "cantidadItem": "1.00",
-        "unidadMedida": 1,
+        "unidadMedida": 43,
         "precioUnitarioItem": "2958519.03",
         "montoItem": "2958519.03",
         "OtraMonedaDetalle": {
@@ -811,9 +830,9 @@ La Nota de Débito (E33) se utiliza para aumentar el valor de una factura previa
         "NumeroLinea": 1,
         "IndicadorFacturacion": 1,
         "NombreItem": "S.R.F",
-        "IndicadorBienoServicio": 2,
+        "IndicadorBienoServicio": 1,
         "CantidadItem": 1,
-        "UnidadMedida": 1,
+        "UnidadMedida": 43,
         "PrecioUnitarioItem": 180,
         "MontoItem": 180
       }
@@ -956,9 +975,9 @@ La Nota de Crédito (E34) se utiliza para disminuir el valor de una factura prev
         "NumeroLinea": 1,
         "IndicadorFacturacion": 1,
         "NombreItem": "S.R.F",
-        "IndicadorBienoServicio": 2,
+        "IndicadorBienoServicio": 1,
         "CantidadItem": 1,
-        "UnidadMedida": 1,
+        "UnidadMedida": 43,
         "PrecioUnitarioItem": 180,
         "MontoItem": 180
       }
@@ -1031,9 +1050,9 @@ La Nota de Crédito (E34) se utiliza para disminuir el valor de una factura prev
         "NumeroLinea": 1,
         "IndicadorFacturacion": 1,
         "NombreItem": "S.R.F",
-        "IndicadorBienoServicio": 2,
+        "IndicadorBienoServicio": 1,
         "CantidadItem": 1,
-        "UnidadMedida": 1,
+        "UnidadMedida": 43,
         "PrecioUnitarioItem": 180,
         "MontoItem": 180
       }
@@ -1169,7 +1188,6 @@ El Comprobante de Compras (E41) se utiliza para respaldar las adquisiciones real
       "TotalITBIS1": "0.00",
       "TotalITBIS2": "0.00",
       "TotalITBIS3": "0.00",
-      "MontoImpuestoAdicional": "0.00",
       "MontoTotal": "15000.00"
     }
   },
@@ -1177,11 +1195,11 @@ El Comprobante de Compras (E41) se utiliza para respaldar las adquisiciones real
     "items": [
       {
         "numeroLinea": 1,
-        "indicadorFacturacion": 1,
+        "indicadorFacturacion": 4,
         "nombreItem": "Compra de productos agrícolas - Plátanos",
-        "indicadorBienoServicio": 2,
+        "indicadorBienoServicio": 1,
         "cantidadItem": "500.00",
-        "unidadMedida": 3,
+        "unidadMedida": 21,
         "precioUnitarioItem": "30.00",
         "montoItem": "15000.00"
       }
@@ -1304,19 +1322,7 @@ El Comprobante de Gastos Menores (E43) se utiliza para documentar gastos de mont
       "codigoInternoComprador": "PROV-GM-001"
     },
     "totales": {
-      "MontoGravadoTotal": "0.00",
-      "MontoGravadoI1": "0.00",
-      "MontoGravadoI2": "0.00",
-      "MontoGravadoI3": "0.00",
       "MontoExento": "2500.00",
-      "ITBIS1": 0,
-      "ITBIS2": 0,
-      "ITBIS3": 0,
-      "TotalITBIS": "0.00",
-      "TotalITBIS1": "0.00",
-      "TotalITBIS2": "0.00",
-      "TotalITBIS3": "0.00",
-      "MontoImpuestoAdicional": "0.00",
       "MontoDescuento": null,
       "MontoRecargo": null,
       "MontoTotal": "2500.00"
@@ -1326,11 +1332,11 @@ El Comprobante de Gastos Menores (E43) se utiliza para documentar gastos de mont
     "items": [
       {
         "numeroLinea": 1,
-        "indicadorFacturacion": 1,
+        "indicadorFacturacion": 4,
         "nombreItem": "Compra de materiales de oficina - útiles varios",
-        "indicadorBienoServicio": 2,
+        "indicadorBienoServicio": 1,
         "cantidadItem": "1.00",
-        "unidadMedida": 16,
+        "unidadMedida": 31,
         "precioUnitarioItem": "2500.00",
         "montoItem": "2500.00",
         "tablaImpuestoAdicional": {}
@@ -1450,18 +1456,7 @@ El Comprobante de Regímenes Especiales (E44) se utiliza para transacciones con 
       "codigoInternoComprador": "ZF-CLI-001"
     },
     "totales": {
-      "MontoGravadoTotal": "0.00",
-      "MontoGravadoI1": "0.00",
-      "MontoGravadoI2": "0.00",
-      "MontoGravadoI3": "0.00",
       "MontoExento": "250000.00",
-      "ITBIS1": 0,
-      "ITBIS2": 0,
-      "ITBIS3": 0,
-      "TotalITBIS": "0.00",
-      "TotalITBIS1": "0.00",
-      "TotalITBIS2": "0.00",
-      "TotalITBIS3": "0.00",
       "MontoImpuestoAdicional": "0.00",
       "MontoTotal": "250000.00"
     }
@@ -1470,11 +1465,11 @@ El Comprobante de Regímenes Especiales (E44) se utiliza para transacciones con 
     "items": [
       {
         "numeroLinea": 1,
-        "indicadorFacturacion": 1,
+        "indicadorFacturacion": 4,
         "nombreItem": "Materia prima para manufactura - Componentes electrónicos",
-        "indicadorBienoServicio": 2,
+        "indicadorBienoServicio": 1,
         "cantidadItem": "1000.00",
-        "unidadMedida": 1,
+        "unidadMedida": 43,
         "precioUnitarioItem": "250.00",
         "montoItem": "250000.00"
       }
@@ -1615,11 +1610,11 @@ El Comprobante Gubernamental (E45) se utiliza para transacciones con entidades d
     "items": [
       {
         "numeroLinea": 1,
-        "indicadorFacturacion": 2,
+        "indicadorFacturacion": 1,
         "nombreItem": "Servicio de mantenimiento de equipos informáticos - Contrato anual",
-        "indicadorBienoServicio": 1,
+        "indicadorBienoServicio": 2,
         "cantidadItem": "1.00",
-        "unidadMedida": 1,
+        "unidadMedida": 43,
         "precioUnitarioItem": "500000.00",
         "montoItem": "500000.00"
       }
@@ -1664,7 +1659,7 @@ El Comprobante de Exportación (E46) documenta las ventas de bienes o servicios 
 
 - Para ventas al exterior
     
-- Exento de ITBIS (tasa 0%)
+- ITBIS a tasa 0 % (`indicadorFacturacion` = 3)
     
 - Requiere identificación del comprador extranjero
     
@@ -1690,7 +1685,7 @@ El Comprobante de Exportación (E46) documenta las ventas de bienes o servicios 
 
 1. El comprador debe ser extranjero (no RNC dominicano)
     
-2. Todo el monto debe ser exento de ITBIS
+2. Todo el monto va a tasa 0 %, en `MontoGravadoI3` (el E46 no admite `MontoExento`)
     
 3. Debe incluir información de moneda extranjera
     
@@ -1746,34 +1741,20 @@ El Comprobante de Exportación (E46) documenta las ventas de bienes o servicios 
       "codigoInternoComprador": "USA-CLI-001"
     },
     "totales": {
-      "MontoGravadoTotal": "0.00",
-      "MontoGravadoI1": "0.00",
-      "MontoGravadoI2": "0.00",
-      "MontoGravadoI3": "0.00",
-      "MontoExento": "2950000.00",
-      "ITBIS1": 0,
-      "ITBIS2": 0,
+      "MontoGravadoTotal": "2950000.00",
+      "MontoGravadoI3": "2950000.00",
       "ITBIS3": 0,
       "TotalITBIS": "0.00",
-      "TotalITBIS1": "0.00",
-      "TotalITBIS2": "0.00",
       "TotalITBIS3": "0.00",
-      "MontoImpuestoAdicional": "0.00",
       "MontoTotal": "2950000.00"
     },
     "OtraMoneda": {
       "TipoMoneda": "USD",
       "TipoCambio": "59.00",
-      "MontoExentoOtraMoneda": "50000.00",
-      "MontoGravado1OtraMoneda": "0.00",
-      "MontoGravado2OtraMoneda": "0.00",
-      "MontoGravado3OtraMoneda": "0.00",
-      "MontoGravadoTotalOtraMoneda": "0.00",
+      "MontoGravado3OtraMoneda": "50000.00",
+      "MontoGravadoTotalOtraMoneda": "50000.00",
       "TotalITBISOtraMoneda": "0.00",
-      "TotalITBIS1OtraMoneda": "0.00",
-      "TotalITBIS2OtraMoneda": "0.00",
       "TotalITBIS3OtraMoneda": "0.00",
-      "MontoImpuestoAdicionalOtraMoneda": "0.00",
       "MontoTotalOtraMoneda": "50000.00"
     }
   },
@@ -1781,11 +1762,11 @@ El Comprobante de Exportación (E46) documenta las ventas de bienes o servicios 
     "items": [
       {
         "numeroLinea": 1,
-        "indicadorFacturacion": 1,
+        "indicadorFacturacion": 3,
         "nombreItem": "Productos manufacturados - Componentes electrónicos",
-        "indicadorBienoServicio": 2,
+        "indicadorBienoServicio": 1,
         "cantidadItem": "5000.00",
-        "unidadMedida": 1,
+        "unidadMedida": 43,
         "precioUnitarioItem": "590.00",
         "montoItem": "2950000.00",
         "OtraMonedaDetalle": {
@@ -1919,19 +1900,7 @@ El Comprobante de Pagos al Exterior de Servicios (E47) se utiliza para documenta
       "codigoInternoComprador": "PROV-USA-001"
     },
     "totales": {
-      "MontoGravadoTotal": "0.00",
-      "MontoGravadoI1": "0.00",
-      "MontoGravadoI2": "0.00",
-      "MontoGravadoI3": "0.00",
       "MontoExento": "1475000.00",
-      "ITBIS1": 0,
-      "ITBIS2": 0,
-      "ITBIS3": 0,
-      "TotalITBIS": "0.00",
-      "TotalITBIS1": "0.00",
-      "TotalITBIS2": "0.00",
-      "TotalITBIS3": "0.00",
-      "MontoImpuestoAdicional": "0.00",
       "MontoDescuento": null,
       "MontoRecargo": null,
       "MontoTotal": "1475000.00"
@@ -1940,17 +1909,6 @@ El Comprobante de Pagos al Exterior de Servicios (E47) se utiliza para documenta
       "TipoMoneda": "USD",
       "TipoCambio": "59.00",
       "MontoExentoOtraMoneda": "25000.00",
-      "MontoGravado1OtraMoneda": "0.00",
-      "MontoGravado2OtraMoneda": "0.00",
-      "MontoGravado3OtraMoneda": "0.00",
-      "MontoGravadoTotalOtraMoneda": "0.00",
-      "TotalITBISOtraMoneda": "0.00",
-      "TotalITBIS1OtraMoneda": "0.00",
-      "TotalITBIS2OtraMoneda": "0.00",
-      "TotalITBIS3OtraMoneda": "0.00",
-      "MontoImpuestoAdicionalOtraMoneda": "0.00",
-      "MontoDescuentoOtraMoneda": "0.00",
-      "MontoRecargoOtraMoneda": "0.00",
       "MontoTotalOtraMoneda": "25000.00"
     }
   },
@@ -1960,9 +1918,9 @@ El Comprobante de Pagos al Exterior de Servicios (E47) se utiliza para documenta
         "numeroLinea": 1,
         "indicadorFacturacion": 4,
         "nombreItem": "Licencias de software empresarial - Suscripción anual",
-        "indicadorBienoServicio": 1,
+        "indicadorBienoServicio": 2,
         "cantidadItem": "1.00",
-        "unidadMedida": 1,
+        "unidadMedida": 43,
         "precioUnitarioItem": "1475000.00",
         "montoItem": "1475000.00",
         "tablaImpuestoAdicional": {},
@@ -2019,32 +1977,104 @@ Son los códigos de la DGII para `formaPago` (tabla de formas de pago del e-CF):
 | 7 | Nota de Crédito |
 | 8 | Otras Formas de Pago |
 
-> **Corrección (octubre 2026):** versiones anteriores de esta tabla tenían códigos que no son los de la DGII (3 = transferencia, 4 = tarjeta de crédito, 5 = tarjeta de débito, 9 = otras). Los correctos son los de arriba: **transferencia = `2`** y **tarjeta (débito o crédito) = `3`**. Si su integración usaba la tabla anterior, revise el mapeo.
+> **Corrección (octubre 2026):** versiones anteriores de esta tabla tenían códigos que no son los de la DGII. Si su integración la usaba, cambie el mapeo:
+>
+> | Forma de pago | Código viejo | Se declaraba como | Código correcto |
+> | --- | --- | --- | --- |
+> | Transferencia | 3 | Tarjeta | **2** |
+> | Tarjeta de crédito | 4 | Venta a crédito | **3** |
+> | Tarjeta de débito | 5 | Bonos o certificados | **3** |
+> | Bonos o certificados | 8 | Otras formas de pago | **5** |
+> | Otras formas de pago | 9 | No existe: la DGII no lo admite | **8** |
+>
+> Efectivo, cheque, permuta y nota de crédito no cambiaron.
 
 ### Catálogo de Unidades de Medida
 
-| Código | Descripción |
-| --- | --- |
-| 1 | Unidad |
-| 2 | Caja |
-| 3 | Kilogramo |
-| 4 | Gramo |
-| 5 | Libra |
-| 6 | Onza |
-| 7 | Metro |
-| 8 | Centímetro |
-| 9 | Pulgada |
-| 10 | Pie |
-| 11 | Yarda |
-| 12 | Litro |
-| 13 | Mililitro |
-| 14 | Galón |
-| 15 | Docena |
-| 16 | Paquete |
-| 17 | Servicio |
-| 18 | Hora |
-| 19 | Día |
-| 20 | Mes |
+Son los códigos de la DGII para `unidadMedida` (tabla del formato e-CF). El campo es opcional: si no aplica, no lo envíe. Unidad es `43`; `1` es barril.
+
+| Código | Abreviatura | Descripción |
+| --- | --- | --- |
+| 1 | BARR | Barril |
+| 2 | BOL | Bolsa |
+| 3 | BOT | Bote |
+| 4 | BULTO | Bultos |
+| 5 | BOTELLA | Botella |
+| 6 | CAJ | Caja/Cajón |
+| 7 | CAJETILLA | Cajetilla |
+| 8 | CM | Centímetro |
+| 9 | CIL | Cilindro |
+| 10 | CONJ | Conjunto |
+| 11 | CONT | Contenedor |
+| 12 | DÍA | Día |
+| 13 | DOC | Docena |
+| 14 | FARD | Fardo |
+| 15 | GL | Galones |
+| 16 | GRAD | Grado |
+| 17 | GR | Gramo |
+| 18 | GRAN | Granel |
+| 19 | HOR | Hora |
+| 20 | HUAC | Huacal |
+| 21 | KG | Kilogramo |
+| 22 | kWh | Kilovatio Hora |
+| 23 | LB | Libra |
+| 24 | LITRO | Litro |
+| 25 | LOT | Lote |
+| 26 | M | Metro |
+| 27 | M2 | Metro Cuadrado |
+| 28 | M3 | Metro Cúbico |
+| 29 | MMBTU | Millones de Unidades Térmicas |
+| 30 | MIN | Minuto |
+| 31 | PAQ | Paquete |
+| 32 | PAR | Par |
+| 33 | PIE | Pie |
+| 34 | PZA | Pieza |
+| 35 | ROL | Rollo |
+| 36 | SOBR | Sobre |
+| 37 | SEG | Segundo |
+| 38 | TANQUE | Tanque |
+| 39 | TONE | Tonelada |
+| 40 | TUB | Tubo |
+| 41 | YD | Yarda |
+| 42 | YD2 | Yarda cuadrada |
+| 43 | UND | Unidad |
+| 44 | EA | Elemento |
+| 45 | MILLAR | Millar |
+| 46 | SAC | Saco |
+| 47 | LAT | Lata |
+| 48 | DIS | Display |
+| 49 | BID | Bidón |
+| 50 | RAC | Ración |
+| 51 | Q | Quintal |
+| 52 | GRT | Toneladas de registro bruto |
+| 53 | P2 | Pie Cuadrado |
+| 54 | PAX | Pasajero |
+| 55 | PULG | Pulgadas |
+| 56 | STAY | Parqueo Barcos En Muelle |
+| 57 | BDJ | Bandeja |
+
+> **Corrección (noviembre 2026):** la tabla anterior no era la de la DGII. Si su integración la usaba, cambie el mapeo:
+>
+> | Unidad | Código viejo | Código correcto |
+> | --- | --- | --- |
+> | Unidad | 1 | **43** |
+> | Caja | 2 | **6** |
+> | Kilogramo | 3 | **21** |
+> | Gramo | 4 | **17** |
+> | Libra | 5 | **23** |
+> | Metro | 7 | **26** |
+> | Centímetro | 8 | **8** |
+> | Pulgada | 9 | **55** |
+> | Pie | 10 | **33** |
+> | Yarda | 11 | **41** |
+> | Litro | 12 | **24** |
+> | Galón | 14 | **15** |
+> | Docena | 15 | **13** |
+> | Paquete | 16 | **31** |
+> | Hora | 18 | **19** |
+> | Día | 19 | **12** |
+>
+> Onza (6), mililitro (13), servicio (17) y mes (20) no existen en la tabla de la DGII. Para esas líneas use otra unidad o no envíe el campo.
 
 ### Catálogo de Tipos de Moneda
 
@@ -2060,12 +2090,17 @@ Son los códigos de la DGII para `formaPago` (tabla de formas de pago del e-CF):
 
 ### Catálogo de Indicadores de Facturación
 
-| Código | Descripción |
-| --- | --- |
-| 1 | Facturación por Producto |
-| 2 | Facturación por Servicio |
-| 3 | Facturación Mixta |
-| 4 | Facturación por Servicio Profesional |
+Son los códigos de la DGII para `indicadorFacturacion`: dicen cómo se grava la línea, no si es un producto o un servicio (eso lo dice `indicadorBienoServicio`).
+
+| Código | Descripción | Total donde se suma la línea |
+| --- | --- | --- |
+| 0 | No facturable | Ninguno |
+| 1 | ITBIS 18 % | `MontoGravadoI1` |
+| 2 | ITBIS 16 % | `MontoGravadoI2` |
+| 3 | ITBIS 0 % | `MontoGravadoI3` |
+| 4 | Exento | `MontoExento` |
+
+El indicador tiene que cuadrar con los totales: el API exige `ITBIS1`, `ITBIS2`, `ITBIS3` o `MontoExento` según el indicador de cada línea. No todos los tipos admiten todos los totales: E43 y E44 solo llevan `MontoExento`, y E46 solo `MontoGravadoI3`.
 
 ---
 
@@ -2080,7 +2115,7 @@ Son los códigos de estado de la DGII:
 | 0 | No encontrado | La DGII no tiene registro del eCF consultado |
 | 1 | Aceptado | El eCF fue aceptado sin observaciones |
 | 2 | Rechazado | El eCF fue rechazado; el motivo viene en `mensajes` |
-| 3 | En proceso | La DGII todavía lo está validando |
+| 3 | En Proceso | La DGII todavía lo está validando |
 | 4 | Aceptado Condicional | El eCF fue aceptado con observaciones (vienen en `mensajes`) |
 
 #### Facturas de Consumo (E32) menores a RD$250,000
@@ -2092,10 +2127,12 @@ Estas facturas se envían a la DGII como **Resumen de Factura de Consumo (RFCE)*
 
 ### Códigos de Error Comunes
 
+El motivo exacto de un rechazo viene en `mensajes[].valor`, y su número en `mensajes[].codigo` (no confundir con `codigo`, que es el estado). Guíese por ese texto.
+
 | Código | Descripción | Solución |
 | --- | --- | --- |
 | 1001 | RNC del emisor inválido | Verificar que el RNC esté correctamente registrado |
-| 1002 | Secuencia de eCF duplicada | Usar una secuencia única no utilizada previamente |
+| 1209 | «Este número de secuencia ya ha sido utilizado» | El número quedó gastado: corrija y emita con un e-NCF nuevo |
 | 1003 | Formato de fecha inválido | Usar formato DD-MM-YYYY |
 | 1004 | Monto total no coincide | Verificar cálculos de totales |
 | 1005 | ITBIS calculado incorrectamente | Recalcular ITBIS según tasas vigentes |
@@ -2116,7 +2153,7 @@ Estas facturas se envían a la DGII como **Resumen de Factura de Consumo (RFCE)*
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | **RNC Comprador Obligatorio** | Sí | No | Según original | Según original | Opcional | Opcional | Sí | Sí | No | No |
 | **Crédito Fiscal ITBIS** | Sí | No | Según original | Según original | No | No | Según régimen | Sí | No | No |
-| **Permite Exento** | Sí | Sí | Sí | Sí | Sí | Sí | Sí | Sí | Sí (todo) | Sí (todo) |
+| **Permite Exento** | Sí | Sí | Sí | Sí | Sí | Sí | Sí | Sí | No (tasa 0 %) | Sí (todo) |
 | **Requiere Referencia** | No | No | Sí | Sí | No | No | No | No | No | No |
 | **Moneda Extranjera** | Opcional | Opcional | Opcional | Opcional | Opcional | Opcional | Opcional | Opcional | Común | Común |
 | **Emisor** | Vendedor | Vendedor | Vendedor | Vendedor | Comprador | Comprador | Vendedor | Vendedor | Vendedor | Comprador |
@@ -2128,8 +2165,8 @@ Estas facturas se envían a la DGII como **Resumen de Factura de Consumo (RFCE)*
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | RNCComprador | ✓ Req | ○ Opc | ✓ Según | ✓ Según | ○ Opc | ○ Opc | ✓ Req | ✓ Req | ✗ No | ✗ No |
 | identificadorextranjero | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ✗ No | ✓ Req | ✓ Req |
-| MontoGravado | ✓ Req | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ✗ No | ○ Opc |
-| MontoExento | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ✓ Común | ✓ Común | ✓ Común | ○ Opc | ✓ Req | ✓ Común |
+| MontoGravado | ✓ Req | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ✓ Solo I3 | ○ Opc |
+| MontoExento | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ✓ Común | ✓ Común | ✓ Común | ○ Opc | ✗ No | ✓ Común |
 | informacionReferencia | ✗ No | ✗ No | ✓ Req | ✓ Req | ✗ No | ✗ No | ✗ No | ✗ No | ✗ No | ✗ No |
 | OtraMoneda | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ○ Opc | ✓ Común | ✓ Común |
 | fechavencimientosecuencia | ✓ Req | ✗ No | ✓ Req | ✗ No | ✓ Req | ✓ Req | ✓ Req | ✓ Req | ✓ Req | ✓ Req |
@@ -2191,13 +2228,37 @@ if (Math.abs(montoCalculado - MontoTotal) > 0.01) {
 
 ### 2\. Manejo de Errores y Reintentos
 
-**Estrategia de Reintentos:**
+**La regla:** reintentar es seguro con **el mismo e-NCF**. Un número nuevo solo es correcto cuando la DGII ya rechazó el comprobante y el número quedó gastado. En cualquier otro caso, un número nuevo puede crear una segunda factura fiscal por la misma venta.
 
-- Implementar reintentos automáticos para errores de red (máximo 3 intentos)
+**Qué hacer según la respuesta:**
+
+| Respuesta | Qué significa | Qué hacer | e-NCF |
+| --- | --- | --- | --- |
+| Sin respuesta, tiempo agotado, error de red o HTTP 5xx | No se sabe si llegó | Reenviar el **mismo JSON** | El mismo |
+| HTTP 502, `estado: "Error de envío"` (E32 menor a RD$250,000) | La DGII no recibió nada | Reenviar el mismo JSON | El mismo |
+| HTTP 202, `estado: "Pendiente DGII"` | Quedó firmado y guardado, y DOSA lo enviará solo cuando la DGII responda | Imprimir con ese QR y la `leyendaContingencia`. No reemplazarlo. | El mismo |
+| HTTP 409, `error: "e-NCF pendiente de la DGII con otro contenido"` | Ese e-NCF ya se firmó con otros datos | No se puede cambiar. Esperar el resultado de la DGII. | El mismo |
+| HTTP 200, `Aceptado` o `Aceptado Condicional` | Es válido | Guardarlo y no volver a emitirlo. Para corregirlo, nota de crédito (E34). | No reemitir |
+| HTTP 200, `Rechazado` con `secuenciaUtilizada: false` | No es válido y el número sigue libre | Corregir y reenviar | El mismo |
+| HTTP 200, `Rechazado` con `secuenciaUtilizada: true` o sin ese campo | No es válido y el número quedó gastado | Corregir y emitir de nuevo | **Uno nuevo** |
+| `Rechazado` con el mensaje 1209 | Se reutilizó un número gastado | Corregir y emitir de nuevo | **Uno nuevo** |
+| HTTP 4xx de validación (por ejemplo, un campo obligatorio) | No se aceptó el envío | Corregir y reenviar | El mismo |
+
+Ante la duda con un **rechazo**, use un número nuevo: el comprobante rechazado no tiene validez fiscal, así que lo único que se pierde es un número. Ante la duda con **cualquier otra respuesta**, use el mismo.
+
+**Cómo evitar una doble emisión:**
+
+- **Guarde el e-NCF antes de enviar.** Asigne el número al documento y guarde esa relación antes del primer envío, para que cada reintento use el mismo.
+- **El e-NCF es la llave.** El API no tiene una llave de idempotencia aparte: identifica el comprobante por e-NCF, RNC del emisor y ambiente. Reenviar un e-NCF aceptado devuelve el mismo comprobante sin firmarlo ni enviarlo otra vez; reenviar uno pendiente devuelve el mismo QR.
+- **Para saber cómo quedó, reenvíe el mismo JSON.** Si está aceptado o pendiente, la respuesta lo dice y no se emite nada nuevo. Si había quedado rechazado, se firma y se envía de nuevo.
+- **No cambie los datos de un e-NCF aceptado.** El API no compara el contenido: si reenvía otros datos con ese número, responde HTTP 200 con el comprobante original, sin avisar.
+- **Un solo envío a la vez por documento.** No mande el mismo e-NCF en paralelo; use un bloqueo por documento.
+
+**Reintentos automáticos:**
+
+- Solo cuando no hubo respuesta o fue un HTTP 5xx: hasta 3 intentos, con espera creciente (1 s, 3 s, 5 s)
     
-- Esperar tiempo incremental entre reintentos (1s, 3s, 5s)
-    
-- No reintentar errores de validación (códigos 1xxx, 2xxx)
+- Si siguen fallando, deje el documento pendiente y vuelva a intentar más tarde con el mismo e-NCF
     
 - Guardar log de todos los intentos y respuestas
     
@@ -2205,17 +2266,25 @@ if (Math.abs(montoCalculado - MontoTotal) > 0.01) {
 **Manejo de Respuestas:**
 
 ``` javascript
-// Ejemplo de manejo de respuesta
-if (response.codigo === "1") {
-  // Aceptado - guardar trackId y código de seguridad
-  guardarComprobante(response.trackId, response.codigoSeguridad);
-} else if (response.codigo === "4") {
-  // Aceptado Condicional - revisar mensajes
-  revisarMensajes(response.mensajes);
-  guardarComprobante(response.trackId, response.codigoSeguridad);
-} else if (response.codigo === "0") {
-  // Rechazado - analizar errores y corregir
-  procesarErrores(response.mensajes);
+// Decida por `estado`: `codigo` es lo mismo en número y viene como texto.
+switch (response.estado) {
+  case "Aceptado":
+    guardarComprobante(response);
+    break;
+  case "Aceptado Condicional":
+    // Es válido, pero con observaciones que hay que revisar
+    revisarMensajes(response.mensajes);
+    guardarComprobante(response);
+    break;
+  case "Rechazado":
+    // Corregir según `mensajes`. Número nuevo salvo que secuenciaUtilizada sea false.
+    procesarRechazo(response.mensajes, response.secuenciaUtilizada !== false);
+    break;
+  case "Pendiente DGII": // HTTP 202
+  case "En Proceso":
+    // Imprimir con este QR y la leyenda si viene. No emitir con otro número.
+    guardarPendiente(response);
+    break;
 }
 
  ```
@@ -2226,7 +2295,7 @@ if (response.codigo === "1") {
 
 - Mantener un contador secuencial por tipo de eCF
     
-- Nunca reutilizar una secuencia, incluso si el envío falló
+- Una secuencia es de un solo documento: guardar la relación antes de enviar. Cuándo reintentar con la misma y cuándo usar otra está en [Manejo de Errores y Reintentos](#2-manejo-de-errores-y-reintentos)
     
 - Implementar bloqueos para evitar duplicados en ambientes concurrentes
     
@@ -2238,7 +2307,7 @@ if (response.codigo === "1") {
 **Formato de Secuencia:**
 
 ```
-E[tipo][secuencia de 11 dígitos]
+E + tipo (2 dígitos) + secuencia (10 dígitos) = 13 caracteres
 Ejemplo: E310000000001, E320000000001
 
  ```
@@ -2462,7 +2531,7 @@ Producción: https://ecf.dgii.gov.do/ecf/...
 
 - **trackId**: Identificador único de la transacción para seguimiento
     
-- **codigo**: Código de estado (0, 1, 2, 4)
+- **codigo**: Código de estado, como texto (ver [Códigos de Estado](#códigos-de-estado)). Para decidir, use `estado`
     
 - **estado**: Descripción del estado
     
@@ -2598,7 +2667,7 @@ Si el eCF fue aceptado, debe emitir una Nota de Crédito (E34) para anularlo y l
 
 ### ¿Puedo reutilizar una secuencia si el envío falló?
 
-No. Cada secuencia debe ser única. Si un envío falla, debe usar una nueva secuencia para el reintento.
+Depende de cómo falló. Si no hubo respuesta, hubo un error de conexión o quedó pendiente, reenvíe con el **mismo** e-NCF: usar otro podría emitir dos facturas por la misma venta. Si la DGII lo rechazó, use uno **nuevo**, salvo que la respuesta traiga `secuenciaUtilizada: false`. Ver [qué hacer según la respuesta](#2-manejo-de-errores-y-reintentos).
 
 ### ¿Cuánto tiempo tengo para emitir una Nota de Crédito?
 
